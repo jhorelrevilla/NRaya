@@ -26,16 +26,16 @@ private:
 public:
     int size;
     int num_jugada = 0; //En que jugada vamos?
-    int max_jugadas = size * size; 
+    int max_jugadas; 
     void ImprimirTablero();
     bool InsertarJugada(char ficha, int x, int y);
     bool IsWin(int y, int x, char ficha);
     int VerificarEstadoJuego(int x, int y, char ficha);
     void ReiniciarTablero();
-    Raya(int size)
-    {
+    Raya(int size){
         this->size = size;
         tablero.resize(size, vector<Casilla>(size));
+        max_jugadas = size * size;
     }
     ~Raya(){};
 };
@@ -158,11 +158,13 @@ void BroadCast(string mensaje, int excepcion = -1){
 
 void SiguienteTurno(){
   TURNO = TresRaya.num_jugada % num_jugadores;
+  cout<<"turno "<<TURNO<<endl;
   int socket_client = LISTA_CLIENTES[TURNO].second;
   EnviarMensaje(socket_client, "T"+ LISTA_CLIENTES[TURNO].first);
 }
 
 void VerificarEstado(int socket_client, char ficha,  int x, int y){
+  cout<<"Verificar estados"<<TresRaya.VerificarEstadoJuego(x, y, ficha)<<endl;
   switch (TresRaya.VerificarEstadoJuego(x, y, ficha)){
   case 0: //Juego en marcha
     SiguienteTurno(); 
