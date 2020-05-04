@@ -205,31 +205,39 @@ void Process_Client_Thread(int socket_client){
         switch (VerificarJugador(comando, socket_client)){
         case 0: //Es turno de jugador
         {
+          
           n = read(socket_client, buffer, 2);
-          cout<<"buffer "<<buffer<<endl;
+          cout<<"Caso 0"<<endl;
           char x = buffer[0];
           char y = buffer[1];
           //En este caso comando = ficha
-          cout<<"InsertarJugada"<<TresRaya.InsertarJugada( comando, (int)x-48, (int)y-48)<<endl;
+          
           if (TresRaya.InsertarJugada( comando, (int)x-48, (int)y-48)){
             //Jugada Legal
-            string jugada = "A" + comando + x + y;
-            cout<<jugada<<" jugada\n";
+            string jugada ="A";
+            jugada+=comando;
+            jugada+=x;jugada+=y;
+            cout<<"jugada: "<<jugada<<endl;
             BroadCast(jugada, socket_client);
-            VerificarEstado(socket_client, comando, (int)x ,(int)y );
+            VerificarEstado(socket_client, comando, (int)x-48 ,(int)y-48 );
           }
           else{
             //JugadaIlegal Mensaje de Error
             EnviarMensaje(socket_client, "C08Invalida");          
           }       
+          bzero(buffer,256);
           break;
         }
         case 1: //Es un mensaje de chat
+          cout<<"Caso 1"<<endl;
           BroadCast("Mensaje", socket_client); //TODO
+          
           break;
 
         case -1:
+        cout<<"Caso -1"<<endl;
           EnviarMensaje(socket_client, "C08Invalida"); //Mensaje de Error
+          
           break;
         }
       }
