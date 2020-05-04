@@ -90,13 +90,9 @@ string PadZeros(int number, int longitud){
 */
 ///////////////////////////////////////////////////////////////////////////////////
 void ProtocoloMensaje(string mensaje){//Ax00TX //A:actualizacion //T:Turno
-  int A=mensaje.find("A");            //L0W0=0  Ax00TX
-  int T=mensaje.find("T");
-  mapa.InsertarJugada(mensaje[A+1],(int)mensaje[A+2]-48,(int)mensaje[A+3]-48);
-  if(mapa.win((int)mensaje[A+3]-48,(int)mensaje[A+2]-48,mensaje[A+1])){
-    cout<<"Perdiste"<<endl;
-  }
-  if(mensaje[T+1]==ficha[0])
+  mapa.InsertarJugada(mensaje[7],(int)mensaje[8]-48,(int)mensaje[9]-48);
+  mapa.ImprimirTablero();
+  if(mensaje[11]==ficha[0])
     turno=true;
 }
 ///////////////////////////////////////////////////////////////////////////////////
@@ -135,10 +131,6 @@ void EnvioMensaje(int SocketFD){
     getline(cin, msgToChat);
     if(!mapa.InsertarJugada(ficha[0],(int)msgToChat[0]-48,(int)msgToChat[1]-48));
       continue;
-    if(mapa.win((int)msgToChat[1]-48,(int)msgToChat[0]-48,ficha[0])){
-      cout<<"ganaste";
-      break;
-    }
     msgToChat = ficha+msgToChat;
     n = write(SocketFD, msgToChat.c_str(), msgToChat.length());
     mapa.ImprimirTablero();
