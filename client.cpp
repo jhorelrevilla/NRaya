@@ -79,7 +79,7 @@ bool Raya::win(int y,int x,char ficha){
 
 string ficha="";
 Raya mapa(3);
-bool turno=1;
+//bool turno=1;
 /*
 string PadZeros(int number, int longitud){
   string num_letra = to_string(number);
@@ -90,30 +90,33 @@ string PadZeros(int number, int longitud){
 */
 ///////////////////////////////////////////////////////////////////////////////////
 void ProtocoloMensaje(string mensaje){//Ax00TX //A:actualizacion //T:Turno
-  mapa.InsertarJugada(mensaje[7],(int)mensaje[8]-48,(int)mensaje[9]-48);
+  int A=mensaje.find('T');
+  mapa.InsertarJugada(mensaje[A+1],(int)mensaje[A+2]-48,(int)mensaje[A+3]-48);
   mapa.ImprimirTablero();
-  if(mensaje[11]==ficha[0])
-    turno=true;
+  //if(mensaje[11]==ficha[0])
+  //  turno=true;
+  
 }
 ///////////////////////////////////////////////////////////////////////////////////
-void RecepcionMensaje(int SocketFD){
+void RecepcionMensaje(int SocketFD){//L0W0AX00
   int n;
   char buffer[256];
+  string message;
   int longitud=0;
   for(;;){
     //Lectura length de mensaje
-    n = read(SocketFD,buffer,12);
+    n = read(SocketFD,buffer,1);
     if (n < 0) perror("ERROR reading from socket");
-    if(buffer[1]=='1'){//LOSE
+    if(n==1)
+      longitud=stoi(buffer);
+    message=buffer;
+    if(message[message.find('L')+1]=='1'){//LOSE
       cout<<"Perdiste"<<endl;
     }
-    if(buffer[3]=='1'){//win
+    if(message.find('W')=='1'){//win
       cout<<"Gano "<<buffer[11]<<endl;
     }
-    if(buffer[5]=='1'){//=
-      cout<<"Empate"<<endl;
-    }
-    ProtocoloMensaje(buffer);
+    ProtocoloMensaje(message);
     bzero(buffer,256);
   }
 }
@@ -124,8 +127,8 @@ void EnvioMensaje(int SocketFD){
   int n;
   //puede ser solo 0 o X
   for(;;){ 
-    if(!turno)//si no es su turno no inserta jugada
-      continue;
+    //if(!turno)//si no es su turno no inserta jugada
+    //  continue;
     cin.clear(); 
     cout << "\nIngrese jugada: ";
     getline(cin, msgToChat);
@@ -135,7 +138,7 @@ void EnvioMensaje(int SocketFD){
     n = write(SocketFD, msgToChat.c_str(), msgToChat.length());
     mapa.ImprimirTablero();
     
-    turno=false;
+    //turno=false;
     bzero(buffer, 256);     
   }
 }
