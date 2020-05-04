@@ -27,7 +27,7 @@ private:
 public:
     int size;
     void ImprimirTablero();
-    void InsertarJugada(char ficha, int x, int y);
+    bool InsertarJugada(char ficha, int x, int y);
     bool win(int y,int x,char ficha);
     Raya(int size){
         this->size = size;
@@ -50,8 +50,12 @@ void Raya::ImprimirTablero(){
     }        
 }
 /////////////////////////////////////////////////////////////////
-void Raya::InsertarJugada(char ficha, int x, int y){
+bool Raya::InsertarJugada(char ficha, int x, int y){
+  if(tablero[x][y].prop=='*'){
     tablero[x][y].prop = ficha;
+    return true;
+  }
+  return false;
 }
 /////////////////////////////////////////////////////////////////
 bool Raya::win(int y,int x,char ficha){
@@ -85,8 +89,8 @@ string PadZeros(int number, int longitud){
 }
 */
 ///////////////////////////////////////////////////////////////////////////////////
-void ProtocoloMensaje(string mensaje){
-  int A=mensaje.find("A");
+void ProtocoloMensaje(string mensaje){//Ax00TX //A:actualizacion //T:Turno
+  int A=mensaje.find("A");            //L0W0=0  Ax00TX
   int T=mensaje.find("T");
   mapa.InsertarJugada(mensaje[A+1],(int)mensaje[A+2]-48,(int)mensaje[A+3]-48);
   if(mapa.win((int)mensaje[A+3]-48,(int)mensaje[A+2]-48,mensaje[A+1])){
@@ -99,16 +103,22 @@ void ProtocoloMensaje(string mensaje){
 void RecepcionMensaje(int SocketFD){
   int n;
   char buffer[256];
-  int longitud;
+  int longitud=0;
   for(;;){
     //Lectura length de mensaje
-    n = read(SocketFD,buffer,1);
+    n = read(SocketFD,buffer,12);
     if (n < 0) perror("ERROR reading from socket");
-    if (n == 1)
-      longitud = stoi(buffer);
-      n = read(SocketFD,buffer,longitud);
-      ProtocoloMensaje(buffer);
-      bzero(buffer,256);
+    if(buffer[1]=='1'){//LOSE
+      cout<<"Perdiste"<<endl;
+    }
+    if(buffer[3]=='1'){//win
+      cout<<"Gano "<<buffer[11]<<endl;
+    }
+    if(buffer[5]=='1'){//=
+      cout<<"Empate"<<endl;
+    }
+    ProtocoloMensaje(buffer);
+    bzero(buffer,256);
   }
 }
 ///////////////////////////////////////////////////////////////////////////////////
@@ -123,15 +133,16 @@ void EnvioMensaje(int SocketFD){
     cin.clear(); 
     cout << "\nIngrese jugada: ";
     getline(cin, msgToChat);
-    mapa.InsertarJugada(ficha[0],(int)msgToChat[0]-48,(int)msgToChat[1]-48);
-    msgToChat = to_string(msgToChat.length()+1)+ficha+msgToChat;
-    cout <<"ENVIAR: "<<msgToChat;
-    n = write(SocketFD, msgToChat.c_str(), msgToChat.length());
-    mapa.ImprimirTablero();
+    if(!mapa.InsertarJugada(ficha[0],(int)msgToChat[0]-48,(int)msgToChat[1]-48));
+      continue;
     if(mapa.win((int)msgToChat[1]-48,(int)msgToChat[0]-48,ficha[0])){
       cout<<"ganaste";
       break;
     }
+    msgToChat = ficha+msgToChat;
+    n = write(SocketFD, msgToChat.c_str(), msgToChat.length());
+    mapa.ImprimirTablero();
+    
     turno=false;
     bzero(buffer, 256);     
   }
