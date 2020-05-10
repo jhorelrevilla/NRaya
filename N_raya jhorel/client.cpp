@@ -96,12 +96,6 @@ void RecepcionMensaje(int SocketFD){
   int n;
   char buffer[256];
   int longitud = 0;
-  n = read(SocketFD,buffer,1);
-  if (n < 0) perror("ERROR reading from socket");
-  if (n==1){
-    cout<<usuario<<" Recibi "<<buffer[0]<<" "<<usuario[0]<<endl;
-  }
-  
   for(;;){
     n = read(SocketFD,buffer,1);
     if (n < 0) perror("ERROR reading from socket");
@@ -124,7 +118,7 @@ void EnvioMensaje(int SocketFD){
       
       if(msgToChat!="" && TresRaya->verificarPos((int)msgToChat[0]-48,(int)msgToChat[1]-48 )){
         cout<<"2"<<endl;
-        msgToChat=usuario+msgToChat;
+        msgToChat=usuario[0]+msgToChat;
         cout<<"envie al server"<<msgToChat<<endl;
         n = write(SocketFD, msgToChat.c_str(), msgToChat.length());
         bzero(buffer, 256);
@@ -156,7 +150,7 @@ int main(void){
   cout<<"Escoje la ficha que te va a representar: ";
   getline(cin,usuario);
   string msg="T"+to_string(size_juego)+"U"+usuario;
-  n=write(SocketFD, msg.c_str(), msg.length());
+  n=write(SocketFD, msg.c_str(), msg.length());//envia T(tamanio)U(ficha)
   // / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
   std::thread(EnvioMensaje, SocketFD).detach();
   std::thread(RecepcionMensaje, SocketFD).detach();

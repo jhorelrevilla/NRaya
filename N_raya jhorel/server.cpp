@@ -37,7 +37,6 @@ void Proceso_Thread(int socket_client){
   string msgToChat;
   char buffer[256];
   int n;
-  char comando;
   int longitud = 0;
   do{ 
     n = read(socket_client,buffer,1);     
